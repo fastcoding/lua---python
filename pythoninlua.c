@@ -68,14 +68,17 @@ int py_convert(lua_State *L, PyObject *o, int withnone)
 		lua_pushboolean(L, 1);
 	} else if (o == Py_False) {
 		lua_pushboolean(L, 0);
-	} else if (PyString_Check(o)) {
+//	} else if (PyString_Check(o)) {
+	} else if (PyBytes_Check(o)) {
 		char *s;
 		Py_ssize_t len;
-		PyString_AsStringAndSize(o, &s, &len);
+//		PyString_AsStringAndSize(o, &s, &len);
+		PyBytes_AsStringAndSize(o, &s, &len);
 		lua_pushlstring(L, s, len);
 		ret = 1;
-	} else if (PyInt_Check(o) || PyFloat_Check(o)) {
-		lua_pushnumber(L, (lua_Number)PyInt_AsLong(o));
+	//} else if (PyInt_Check(o) || PyFloat_Check(o)) {
+	} else if (PyLong_Check(o) || PyFloat_Check(o)) {
+		lua_pushnumber(L, (lua_Number)PyLong_AsLong(o));
 		ret = 1;
 	} else if (LuaObject_Check(o)) {
 		lua_rawgeti(L, LUA_REGISTRYINDEX, ((LuaObject*)o)->ref);
@@ -332,7 +335,8 @@ static int py_object_tostring(lua_State *L)
 		} else {
 			char *s;
 			Py_ssize_t len;
-			PyString_AsStringAndSize(repr, &s, &len);
+//			PyString_AsStringAndSize(repr, &s, &len);
+			PyBytes_AsStringAndSize(repr, &s, &len);
 			lua_pushlstring(L, s, len);
 			Py_DECREF(repr);
 		}
@@ -340,7 +344,7 @@ static int py_object_tostring(lua_State *L)
 	return 1;
 }
 
-static const luaL_reg py_object_lib[] = {
+static const luaL_Reg py_object_lib[] = {
 	{"__call",	py_object_call},
 	{"__index",	py_object_index},
 	{"__newindex",	py_object_newindex},
@@ -349,6 +353,14 @@ static const luaL_reg py_object_lib[] = {
 	{NULL, NULL}
 };
 
+static int
+Py_FlushLine(void)
+{
+       PyObject *f = PySys_GetObject("stdout");
+       if (f == NULL)
+               return 0;
+       return PyFile_WriteString("\n", f);
+}
 static int py_run(lua_State *L, int eval)
 {
 	const char *s;
@@ -542,7 +554,7 @@ static int py_import(lua_State *L)
 	return ret;
 }
 
-static const luaL_reg py_lib[] = {
+static const luaL_Reg py_lib[] = {
 	{"execute",	py_execute},
 	{"eval",	py_eval},
 	{"asindx",	py_asindx},

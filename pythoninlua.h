@@ -24,7 +24,10 @@
 #define PYTHONINLUA_H
 
 #define POBJECT "POBJECT"
-
+#ifdef LUA_API
+#undef LUA_API
+#endif
+#define LUA_API __declspec(dllexport)
 int py_convert(lua_State *L, PyObject *o, int withnone);
 
 typedef struct {
@@ -32,6 +35,6 @@ typedef struct {
 	int asindx;
 } py_object;
 
-LUA_API int luaopen_python(lua_State *L);
+LUA_API int luaopen_libpython(lua_State *L);
 
 #endif

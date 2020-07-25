@@ -24,7 +24,8 @@
 #define LUAINPYTHON_H
 
 typedef struct {
-	PyObject_HEAD
+	PyObject_HEAD 
+//_INIT(NULL,0)
 	int ref;
 	int refiter;
 } LuaObject;
@@ -32,7 +33,9 @@ typedef struct {
 PyAPI_DATA(PyTypeObject) LuaObject_Type;
 
 #define LuaObject_Check(op) PyObject_TypeCheck(op, &LuaObject_Type)
-
+#ifndef DL_EXPORT
+#define DL_EXPORT(x) __declspec(dllexport) x __stdcall  
+#endif
 PyObject *LuaConvert(lua_State *L, int n);
 
 extern lua_State *LuaState;

@@ -8,10 +8,11 @@ MESSAGE(STATUS "Found Python headers in ${PYTHON_INCLUDE_DIRS}")
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR} 
     ${PYTHON_INCLUDE_DIRS}
+	${LUA_INCDIR}	
 )
 
 SET(src pythoninlua.c luainpython.c)
 SET(luasrc init.lua)
 
 ADD_TORCH_PACKAGE(python "${src}" "${luasrc}" "System/Interfaces")
-TARGET_LINK_LIBRARIES(python luaT TH ${PYTHON_LIBRARIES})
+TARGET_LINK_LIBRARIES(python libluajit ${PYTHON_LIBRARIES})

@@ -47,7 +47,7 @@ PyObject *LuaConvert(lua_State *L, int n)
 		case LUA_TSTRING: {
 			const char *s = lua_tostring(L, n);
 			int len = lua_strlen(L, n);
-			ret = PyString_FromStringAndSize(s, len);
+			ret = PyBytes_FromStringAndSize(s,len); //PyString_FromStringAndSize(s, len);
 			break;
 		}
 
@@ -57,7 +57,7 @@ PyObject *LuaConvert(lua_State *L, int n)
 				ret = PyFloat_FromDouble(
 					(lua_Number)lua_tonumber(L, n));
 			} else {
-				ret = PyInt_FromLong((long)num);
+				ret = PyLong_FromLong((long)num);
 			}
 			break;
 		}
@@ -186,7 +186,9 @@ static void LuaObject_dealloc(LuaObject *self)
 	luaL_unref(L, LUA_REGISTRYINDEX, self->ref);
 	if (self->refiter)
 		luaL_unref(L, LUA_REGISTRYINDEX, self->refiter);
-	self->ob_type->tp_free((PyObject *)self);
+	//self->ob_type->tp_free((PyObject *)self);
+	Py_TYPE(self)->tp_free((PyObject*)self);
+//	Py_CLEAR((PyObject *)self);
 }
 
 static PyObject *LuaObject_getattr(PyObject *obj, PyObject *attr)
@@ -250,33 +252,33 @@ static PyObject *LuaObject_str(PyObject *obj)
 	if (luaL_callmeta(L, -1, "__tostring")) {
 		s = lua_tostring(L, -1);
 		lua_pop(L, 1);
-		if (s) ret = PyString_FromString(s);
+		if (s) ret = PyBytes_FromString(s);
 	}
 	if (!ret) {
 		int type = lua_type(L, -1);
 		switch (type) {
 			case LUA_TTABLE:
 			case LUA_TFUNCTION:
-				ret = PyString_FromFormat("<Lua %s at %p>",
+				ret = PyBytes_FromFormat("<Lua %s at %p>",
 					lua_typename(L, type),
 					lua_topointer(L, -1));
 				break;
 			
 			case LUA_TUSERDATA:
 			case LUA_TLIGHTUSERDATA:
-				ret = PyString_FromFormat("<Lua %s at %p>",
+				ret = PyBytes_FromFormat("<Lua %s at %p>",
 					lua_typename(L, type),
 					lua_touserdata(L, -1));
 				break;
 
 			case LUA_TTHREAD:
-				ret = PyString_FromFormat("<Lua %s at %p>",
+				ret = PyBytes_FromFormat("<Lua %s at %p>",
 					lua_typename(L, type),
 					(void*)lua_tothread(L, -1));
 				break;
 
 			default:
-				ret = PyString_FromFormat("<Lua %s>",
+				ret = PyBytes_FromFormat("<Lua %s>",
 					lua_typename(L, type));
 				break;
 
@@ -325,7 +327,7 @@ static int LuaObject_length(LuaObject *obj)
 {
 	int len;
 	lua_rawgeti(L, LUA_REGISTRYINDEX, ((LuaObject*)obj)->ref);
-	len = luaL_getn(L, -1);
+	len = lua_objlen(L, -1);
 	lua_settop(L, 0);
 	return len;
 }
@@ -387,7 +389,7 @@ PyTypeObject LuaObject_Type = {
         0,			/*tp_init*/
         PyType_GenericAlloc,    /*tp_alloc*/
         PyType_GenericNew,      /*tp_new*/
-      	_PyObject_Del,       	/*tp_free*/
+      	PyObject_Del,       	/*tp_free*/
         0,                      /*tp_is_gc*/
 };
 
@@ -483,8 +485,10 @@ static PyMethodDef lua_methods[] = {
 DL_EXPORT(void)
 initlua(void)
 {
-	PyObject *m;
-	m = Py_InitModule("lua", lua_methods);
+//	PyObject *m;
+//	PyMODINIT_FUNC pyinit=
+    PyModule_Create(lua_methods);
+//	m = Py_InitModule("lua", lua_methods);
 
 	if (!L) {
 		L = lua_open();
