@@ -2,7 +2,7 @@ package = "python"
 version = "scm-0"
 
 source = {
-   url = "git://github.com/clementfarabet/lua---python",
+   url = "git://github.com/fastcoding/lua---python",
 }
 
 description = {
@@ -10,7 +10,7 @@ description = {
    detailed = [[
 Load a Python env into Lua.
    ]],
-   homepage = "https://github.com/clementfarabet/lua---python",
+   homepage = "https://github.com/fastcoding/lua---python",
    license = "GPL"
 }
 
@@ -22,8 +22,8 @@ build = {
    type = "cmake",
    variables={
 	CMAKE_PREFIX_PATH="$(LUA_BINDIR)/..", 
-	LUA_INCDIR="$(LUA_INCDIR)",
-	LUA_LIBDIR="$(LUA_LIBDIR)" ,
+	LUA_INCLUDE_DIR="$(LUA_INCDIR)",
+	LUA_LIBRARY="$(LUA_LIBDIR)" ,
     CMAKE_INSTALL_PREFIX="$(PREFIX)"
 
 	}
